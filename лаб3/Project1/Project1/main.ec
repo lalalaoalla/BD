@@ -13,7 +13,7 @@ void connectBD()
     exec sql connect to students@students.ami.nstu.ru user "pmi-b1303" using "Shlasow0";
     if(sqlca.sqlcode < 0)
     {
-        printf("\nНеверный логин или пароль\nОписание ошибки: %s\n*Выход из программы*\n\n", 
+        printf("\nОшибка подключения\nОписание ошибки: %s\n*Выход из программы*\n\n", 
 sqlca.sqlerrm.sqlerrmc);
         exit(1);
     }
@@ -40,8 +40,8 @@ int main()
 {
     // секция объявления переменнфх
     exec sql begin declare section;//начало
-    int reiting, count_post;
-    char n_post[7], name[21], town[21], n_izd[7], n_det[7], task_num;
+        int reiting, count_post;
+        char n_post[7], name[21], town[21], n_izd[7], n_det[7], task_num;
     exec sql end declare section;// конец
     
     connectBD();
@@ -122,7 +122,7 @@ int main()
                     // запрос 3
                     //курсор помогает просматривать результаты построчно
                     exec sql declare cursor_3 cursor for
-                    select spj.n_det
+                    select distinct spj.n_det
                     into :n_det
                     from spj
                     join p on p.n_det=spj.n_det
@@ -134,7 +134,6 @@ int main()
                           group by spj.n_det
                         ) zap on zap.n_det=spj.n_det
                     where spj.kol*p.ves<mves;
-
                     exec sql open cursor_3;
                     if (sqlca.sqlcode < 0)
                     {
@@ -182,7 +181,7 @@ int main()
                     exec sql declare cursor_4 cursor for
                     select n_post
                     into :n_post
-                    from spj
+                    from s
                     except
                     select distinct n_post
                     from spj 
@@ -190,7 +189,6 @@ int main()
                                     from spj
                                     join s on s.n_post=spj.n_post
                                     where town='Лондон');
-
                     exec sql open cursor_4;
                     if (sqlca.sqlcode < 0)
                     {
