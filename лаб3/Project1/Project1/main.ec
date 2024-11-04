@@ -41,6 +41,7 @@ int main()
     // секция объявления переменнфх
     exec sql begin declare section;//начало
         int reiting, count_post;
+        int name_ind = 0;
         char n_post[7], name[21], town[21], n_izd[7], n_det[7], task_num;
     exec sql end declare section;// конец
     
@@ -235,7 +236,7 @@ int main()
                     //запрос номер 5
                     exec sql declare cursor_5 cursor for
                     select *
-                    into :n_post, :name, :reiting, :town
+                    into :n_post, :name indicator: name_ind, :reiting, :town
                     from s
                     where n_post in(select n_post
                                     from spj
