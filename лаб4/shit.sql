@@ -1,26 +1,21 @@
-select p.n_det, spj.n_post, sum(spj.kol) as total_quantity
+select p.*, b.kol
 from p
-left join spj on p.n_det = spj.n_det
-group by p.n_det, spj.n_post
-having count(spj.kol) = (select max(total_count)
-                         from (select spj.n_post, count(spj.kol) as total_count
-                               from spj
-                               where spj.n_det = p.n_det
-                               group by spj.n_post
-                             ) as supplier_totals
-                         where spj.n_post in (select n_post
-                                              from (select spj.n_post, count(spj.n_izd) as count_post_izd
-                                                    from spj
-                                                    where spj.n_det = p.n_det
-                                                    group by spj.n_post
-                                                    ) as product_counts
-                                               where count_post_izd = (select max(count_post_izd)
-                                                                       from (select spj.n_post, count(spj.n_izd) as count_post_izd
-                                                                             from spj
-                                                                             where spj.n_det = p.n_det
-                                                                             group by spj.n_post) as inner_counts
-                                                                       )
-                                                )
-                        )
-
-order by p.n_det, spj.n_post desc
+full join (select t.n_det, count(t.n_izd) kol
+      from (select n_izd, (select a.n_det
+             from
+             (select x.n_det, sum(kol) vol
+              from spj x 
+              join p on x.n_det = p.n_det
+              where n_izd = j.n_izd
+                    and p.ves = (select max(ves)
+                                 from spj
+                                 join p on p.n_det = spj.n_det
+                                 where n_izd = j.n_izd)
+              group by x.n_det
+              ) a
+              join p on p.n_det = a.n_det
+              order by vol desc, p.name desc
+              limit 1)
+       from j) t
+       group by t.n_det) b on b.n_det = p.n_det
+order by 1
